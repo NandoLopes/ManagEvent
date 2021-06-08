@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ManagEvent.WebAPI.Data;
-using ManagEvent.WebAPI.Model;
+using ManagEvent.Repository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,8 +13,8 @@ namespace ManagEvent.WebAPI.Controllers
     [ApiController]
     public class ValuesController : ControllerBase
     {
-        public DataContext _context { get; }
-        public ValuesController(DataContext context)
+        public ManagEventContext _context { get; }
+        public ValuesController(ManagEventContext context)
         {
             _context = context;
 
@@ -42,7 +41,7 @@ namespace ManagEvent.WebAPI.Controllers
         {
             try
             {
-                var results = await _context.Eventos.FirstOrDefaultAsync(x => x.EventoId == id);
+                var results = await _context.Eventos.FirstOrDefaultAsync(x => x.Id == id);
                 return Ok (results);
             }
             catch (System.Exception)
