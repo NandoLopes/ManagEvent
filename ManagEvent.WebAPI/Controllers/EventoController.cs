@@ -26,7 +26,7 @@ namespace ManagEvent.WebAPI.Controllers
             }
             catch (System.Exception)
             {
-                return this.StatusCode(StatusCodes.Status500InternalServerError, "Banco de Dados Falhou!");
+                return this.StatusCode(StatusCodes.Status500InternalServerError, "Banco de Dados Falhou! (get)");
             }
         }
 
@@ -40,7 +40,7 @@ namespace ManagEvent.WebAPI.Controllers
             }
             catch (System.Exception)
             {
-                return this.StatusCode(StatusCodes.Status500InternalServerError, "Banco de Dados Falhou!");
+                return this.StatusCode(StatusCodes.Status500InternalServerError, "Banco de Dados Falhou! (getById)");
             }
         }
 
@@ -54,7 +54,7 @@ namespace ManagEvent.WebAPI.Controllers
             }
             catch (System.Exception)
             {
-                return this.StatusCode(StatusCodes.Status500InternalServerError, "Banco de Dados Falhou!");
+                return this.StatusCode(StatusCodes.Status500InternalServerError, "Banco de Dados Falhou! (getByTema)");
             }
         }
 
@@ -71,13 +71,13 @@ namespace ManagEvent.WebAPI.Controllers
             }
             catch (System.Exception)
             {
-                return this.StatusCode(StatusCodes.Status500InternalServerError, "Banco de Dados Falhou!");
+                return this.StatusCode(StatusCodes.Status500InternalServerError, "Banco de Dados Falhou! (post)");
             }
 
             return BadRequest();
         }
 
-        [HttpPut]
+        [HttpPut("{EventoId}")]
         public async Task<IActionResult> Put(int EventoId, Evento model)
         {
             try
@@ -93,13 +93,13 @@ namespace ManagEvent.WebAPI.Controllers
             }
             catch (System.Exception)
             {
-                return this.StatusCode(StatusCodes.Status500InternalServerError, "Banco de Dados Falhou!");
+                return this.StatusCode(StatusCodes.Status500InternalServerError, "Banco de Dados Falhou! (put)");
             }
 
             return BadRequest();
         }
 
-        [HttpDelete]
+        [HttpDelete("{EventoId}")]
         public async Task<IActionResult> Delete(int EventoId)
         {
             try
@@ -107,7 +107,7 @@ namespace ManagEvent.WebAPI.Controllers
                 var evento = await _repo.GetEventoAsyncById(EventoId, false);
                 if(evento == null) return NotFound();
 
-                _repo.Update(evento);
+                _repo.Delete(evento);
 
                 if(await _repo.SaveChangesAsync()){
                     return Ok();
