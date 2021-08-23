@@ -1,6 +1,9 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using AutoMapper;
 using ManagEvent.Domain;
 using ManagEvent.Repository;
+using ManagEvent.WebAPI.Dtos;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,8 +14,10 @@ namespace ManagEvent.WebAPI.Controllers
     public class EventoController : ControllerBase
     {
         public readonly IManagEventRepository _repo;
-        public EventoController(IManagEventRepository repo)
+        public readonly IMapper _mapper;
+        public EventoController(IManagEventRepository repo, IMapper mapper)
         {
+            _mapper = mapper;
             _repo = repo;
         }
 
@@ -21,8 +26,11 @@ namespace ManagEvent.WebAPI.Controllers
         {
             try
             {
-                var results = await _repo.GetAllEventosAsync(true);
-                return Ok (results);
+                var eventos = await _repo.GetAllEventosAsync(true);
+                
+                var results = _mapper.Map<EventoDto[]>(eventos);
+
+                return Ok(results);
             }
             catch (System.Exception)
             {
@@ -35,8 +43,11 @@ namespace ManagEvent.WebAPI.Controllers
         {
             try
             {
-                var results = await _repo.GetEventoAsyncById(EventoId, true);
-                return Ok (results);
+                var evento = await _repo.GetEventoAsyncById(EventoId, true);
+
+                var results = _mapper.Map<EventoDto>(evento);
+
+                return Ok(results);
             }
             catch (System.Exception)
             {
@@ -49,8 +60,11 @@ namespace ManagEvent.WebAPI.Controllers
         {
             try
             {
-                var results = await _repo.GetAllEventosAsyncByTema(tema, true);
-                return Ok (results);
+                var eventos = await _repo.GetAllEventosAsyncByTema(tema, true);
+
+                var results = _mapper.Map<EventoDto[]>(eventos);
+
+                return Ok(results);
             }
             catch (System.Exception)
             {
@@ -59,36 +73,42 @@ namespace ManagEvent.WebAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post(Evento model)
+        public async Task<IActionResult> Post(EventoDto model)
         {
             try
             {
-                _repo.Add(model);
+                var evento = _mapper.Map<Evento>(model);
 
-                if(await _repo.SaveChangesAsync()){
-                    return Created($"/api/evento/{model.Id}", model);
+                _repo.Add(evento);
+
+                if (await _repo.SaveChangesAsync())
+                {
+                    return Created($"/api/evento/{model.Id}", _mapper.Map<EventoDto>(evento));
                 }
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-                return this.StatusCode(StatusCodes.Status500InternalServerError, "Banco de Dados Falhou! (post)");
+                return this.StatusCode(StatusCodes.Status500InternalServerError, $"Banco de Dados Falhou! (post) {ex.Message}");
             }
 
             return BadRequest();
         }
 
         [HttpPut("{EventoId}")]
-        public async Task<IActionResult> Put(int EventoId, Evento model)
+        public async Task<IActionResult> Put(int EventoId, EventoDto model)
         {
             try
             {
                 var evento = await _repo.GetEventoAsyncById(EventoId, false);
-                if(evento == null) return NotFound();
+                if (evento == null) return NotFound();
 
-                _repo.Update(model);
+                _mapper.Map(model, evento);
 
-                if(await _repo.SaveChangesAsync()){
-                    return Created($"/api/evento/{model.Id}", model);
+                _repo.Update(evento);
+
+                if (await _repo.SaveChangesAsync())
+                {
+                    return Created($"/api/evento/{model.Id}", _mapper.Map<EventoDto>(evento));
                 }
             }
             catch (System.Exception)
@@ -105,11 +125,12 @@ namespace ManagEvent.WebAPI.Controllers
             try
             {
                 var evento = await _repo.GetEventoAsyncById(EventoId, false);
-                if(evento == null) return NotFound();
+                if (evento == null) return NotFound();
 
                 _repo.Delete(evento);
 
-                if(await _repo.SaveChangesAsync()){
+                if (await _repo.SaveChangesAsync())
+                {
                     return Ok();
                 }
             }
